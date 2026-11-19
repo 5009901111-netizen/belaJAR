@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pulau Ilmu – Game Kuis Belajar</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#e4f0fb;--card:#fff;--ink:#14213d;--mute:#4f5f7a;--line:#c5d8ee;--sun:#fcb92b;--sunink:#3a2800;--ok:#1f8a4f;--okbg:#d8f3e3;--bad:#d6303a;--badbg:#fde0e2;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a2e;--card:#18263f;--ink:#eaf1fb;--mute:#9db0cc;--line:#2c3f5e;--ok:#4cd08a;--okbg:#14382a;--bad:#ff7a82;--badbg:#42191f}}
+:root[data-theme="dark"]{--bg:#0f1a2e;--card:#18263f;--ink:#eaf1fb;--mute:#9db0cc;--line:#2c3f5e;--ok:#4cd08a;--okbg:#14382a;--bad:#ff7a82;--badbg:#42191f}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 17px/1.5 Nunito,system-ui,sans-serif;min-height:100vh}
+main{max-width:560px;margin:0 auto;padding:20px 16px 40px}
+h1,h2,.display{font-family:Fredoka,"Trebuchet MS",sans-serif;font-weight:600;margin:0}
+h1{font-size:2.4rem;line-height:1.1}
+.sub{color:var(--mute);margin:6px 0 22px}
+.cats{display:grid;gap:12px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.cat{display:flex;align-items:center;gap:14px;text-align:left;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:14px 16px}
+.cat:hover{border-color:var(--sun)}
+.cat .ic{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font:600 1.6rem Fredoka,sans-serif;background:var(--sun);color:var(--sunink)}
+.cat b{display:block;font:600 1.2rem Fredoka,sans-serif}
+.cat span.d{color:var(--mute);font-size:.92rem}
+.best{margin-top:18px;color:var(--mute)}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px;font-weight:700}
+.hearts{font-size:1.3rem;letter-spacing:2px}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:2px 12px}
+.bar{height:12px;border-radius:99px;background:var(--line);overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;width:100%;background:var(--sun)}
+.bar.low i{background:var(--bad)}
+.q{background:var(--card);border:2px solid var(--line);border-radius:22px;padding:20px 18px;margin-bottom:14px}
+.q .n{color:var(--mute);font-size:.9rem}
+.q h2{font-size:1.5rem;line-height:1.3;margin-top:4px}
+.opts{display:grid;gap:10px}
+.opt{text-align:left;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:13px 16px;font-weight:700}
+.opt:hover:not(:disabled){border-color:var(--sun)}
+.opt.ok{background:var(--okbg);border-color:var(--ok)}
+.opt.no{background:var(--badbg);border-color:var(--bad)}
+.opt:disabled{cursor:default}
+.fb{min-height:3.2em;margin:14px 0 6px;font-weight:700}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--bad)}
+.go{background:var(--sun);color:var(--sunink);border:0;border-radius:14px;padding:12px 22px;font:600 1.1rem Fredoka,sans-serif}
+.go.alt{background:transparent;color:var(--ink);border:2px solid var(--line);margin-left:8px}
+.big{font:600 4rem/1 Fredoka,sans-serif;margin:10px 0}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 22px}
+.hide{display:none}
+@media (prefers-reduced-motion:no-preference){.shake{animation:sh .3s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}}
+</style>
+</head>
+<body>
+<main>
+<section id="menu">
+  <h1>Pulau Ilmu</h1>
+  <p class="sub">Jawab kuis, kumpulkan poin, dan jaga tiga nyawamu. Makin cepat menjawab, makin besar skornya.</p>
+  <div class="cats" id="cats"></div>
+  <p class="best" id="best"></p>
+</section>
+
+<section id="game" class="hide" aria-live="polite">
+  <div class="hud">
+    <span class="hearts" id="hearts" aria-label="Nyawa"></span>
+    <span class="pill" id="streak">Runtun 0</span>
+    <span class="pill" id="score">0 poin</span>
+  </div>
+  <div class="bar" id="bar"><i id="fill"></i></div>
+  <div class="q"><div class="n" id="num"></div><h2 id="qt"></h2></div>
+  <div class="opts" id="opts"></div>
+  <div class="fb" id="fb"></div>
+  <button class="go hide" id="next">Lanjut</button>
+</section>
+
+<section id="end" class="hide">
+  <h2 id="etitle"></h2>
+  <div class="big" id="escore"></div>
+  <div class="stats" id="estats"></div>
+  <button class="go" id="again">Main lagi</button>
+  <button class="go alt" id="home">Pilih mata pelajaran</button>
+</section>
+</main>
+
+<script>
+const DATA={
+mat:{name:"Matematika",ic:"∑",d:"Hitungan, pecahan, bangun datar",qs:[
+["7 × 8 = …","56",["54","64","48"]],
+["144 ÷ 12 = …","12",["11","14","16"]],
+["15% dari 200 adalah …","30",["20","25","35"]],
+["Keliling persegi dengan sisi 9 cm adalah …","36 cm",["18 cm","27 cm","81 cm"]],
+["3/4 + 1/4 = …","1",["1/2","3/8","4/8"]],
+["Akar kuadrat dari 81 adalah …","9",["7","8","10"]],
+["Luas segitiga dengan alas 10 cm dan tinggi 6 cm adalah …","30 cm²",["60 cm²","16 cm²","36 cm²"]],
+["2³ + 5 = …","13",["11","16","21"]]]},
+ipa:{name:"IPA",ic:"⚛",d:"Alam, tubuh, dan benda di sekitar kita",qs:[
+["Planet yang paling dekat dengan Matahari adalah …","Merkurius",["Venus","Mars","Bumi"]],
+["Gas yang diserap tumbuhan saat fotosintesis adalah …","Karbon dioksida",["Oksigen","Nitrogen","Hidrogen"]],
+["Air membeku pada suhu … °C.","0",["10","−10","100"]],
+["Organ yang memompa darah ke seluruh tubuh adalah …","Jantung",["Paru-paru","Hati","Ginjal"]],
+["Hewan pemakan tumbuhan disebut …","Herbivora",["Karnivora","Omnivora","Insektivora"]],
+["Zat yang bentuknya berubah mengikuti wadah tetapi volumenya tetap adalah …","Cair",["Padat","Gas","Plasma"]],
+["Satuan gaya dalam SI adalah …","Newton",["Joule","Watt","Pascal"]],
+["Bagian tumbuhan yang menyerap air dari tanah adalah …","Akar",["Batang","Daun","Bunga"]]]},
+bin:{name:"Bahasa Indonesia",ic:"Aa",d:"Kata, ejaan, dan majas",qs:[
+["Antonim kata “rajin” adalah …","Malas",["Tekun","Giat","Ulet"]],
+["Sinonim kata “pandai” adalah …","Cerdas",["Bodoh","Lambat","Malas"]],
+["Penulisan kata baku yang benar adalah …","Analisis",["Analisa","Analisys","Analysa"]],
+["Kata berikut yang termasuk kata benda adalah …","Meja",["Berlari","Indah","Cepat"]],
+["Lawan kata “tinggi” adalah …","Rendah",["Panjang","Besar","Jauh"]],
+["Imbuhan pada kata “membaca” adalah …","me-",["ber-","di-","ter-"]],
+["“Dia bagai singa di medan perang.” Majas pada kalimat ini adalah …","Simile",["Hiperbola","Personifikasi","Metafora"]],
+["Penulisan kata baku yang benar adalah …","Nasihat",["Nasehat","Nasihad","Nasiat"]]]},
+geo:{name:"Geografi",ic:"◍",d:"Peta, pulau, gunung, dan samudra",qs:[
+["Gunung tertinggi di Indonesia adalah …","Puncak Jaya",["Gunung Kerinci","Gunung Semeru","Gunung Rinjani"]],
+["Samudra terluas di dunia adalah …","Samudra Pasifik",["Samudra Atlantik","Samudra Hindia","Samudra Arktik"]],
+["Benua terluas di dunia adalah …","Asia",["Afrika","Amerika Utara","Eropa"]],
+["Sungai terpanjang di Indonesia adalah …","Kapuas",["Musi","Bengawan Solo","Mahakam"]],
+["Selat yang memisahkan Pulau Sumatra dan Semenanjung Malaya adalah …","Selat Malaka",["Selat Sunda","Selat Bali","Selat Makassar"]],
+["Garis lintang 0° disebut …","Khatulistiwa",["Meridian","Kutub","Garis Balik Utara"]],
+["Kota Surabaya terletak di provinsi …","Jawa Timur",["Jawa Tengah","Jawa Barat","Bali"]],
+["Danau terbesar di Indonesia adalah …","Danau Toba",["Danau Poso","Danau Singkarak","Danau Maninjau"]]]}
+};
+const $=id=>document.getElementById(id);
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const TIME=15;
+let S={};
+
+function getBest(k){try{return +localStorage.getItem("pi-best-"+k)||0}catch(e){return 0}}
+function setBest(k,v){try{localStorage.setItem("pi-best-"+k,v)}catch(e){}}
+
+function view(n){["menu","game","end"].forEach(x=>$(x).classList.toggle("hide",x!==n))}
+
+function menu(){
+  $("cats").innerHTML="";
+  Object.keys(DATA).forEach(k=>{
+    const c=DATA[k],b=document.createElement("button");
+    b.className="cat";
+    b.innerHTML='<span class="ic">'+c.ic+'</span><span><b>'+c.name+'</b><span class="d">'+c.d+'</span></span>';
+    b.onclick=()=>start(k);
+    $("cats").appendChild(b);
+  });
+  const tot=Object.keys(DATA).map(k=>DATA[k].name+" "+getBest(k)).join(" · ");
+  $("best").textContent="Skor terbaik: "+tot;
+  view("menu");
+}
+
+function start(k){
+  S={k:k,list:shuffle(DATA[k].qs),i:0,score:0,lives:3,streak:0,right:0,maxStreak:0,t:TIME,timer:null,locked:false};
+  view("game");show();
+}
+
+function hud(){
+  $("hearts").textContent="♥".repeat(S.lives)+"♡".repeat(3-S.lives);
+  $("streak").textContent="Runtun "+S.streak;
+  $("score").textContent=S.score+" poin";
+}
+
+function show(){
+  const q=S.list[S.i];
+  S.locked=false;S.t=TIME;
+  $("num").textContent="Soal "+(S.i+1)+" dari "+S.list.length;
+  $("qt").textContent=q[0];
+  $("fb").textContent="";$("fb").className="fb";
+  $("next").classList.add("hide");
+  const o=$("opts");o.innerHTML="";
+  shuffle([q[1]].concat(q[2])).forEach(t=>{
+    const b=document.createElement("button");
+    b.className="opt";b.textContent=t;
+    b.onclick=()=>answer(b,t===q[1]);
+    o.appendChild(b);
+  });
+  hud();tick();
+  clearInterval(S.timer);
+  S.timer=setInterval(tick,100);
+}
+
+function tick(){
+  if(S.locked)return;
+  if(S.timer&&S.t<=0){return answer(null,false)}
+  $("fill").style.width=Math.max(0,S.t/TIME*100)+"%";
+  $("bar").classList.toggle("low",S.t<=5);
+  if(S.timer)S.t=Math.round((S.t-0.1)*10)/10;
+}
+
+function answer(btn,ok){
+  if(S.locked)return;
+  S.locked=true;clearInterval(S.timer);
+  const q=S.list[S.i];
+  document.querySelectorAll(".opt").forEach(b=>{
+    b.disabled=true;
+    if(b.textContent===q[1])b.classList.add("ok");
+  });
+  const fb=$("fb");
+  if(ok){
+    S.streak++;S.right++;S.maxStreak=Math.max(S.maxStreak,S.streak);
+    const gain=10+Math.ceil(S.t)+Math.min(S.streak-1,5)*2;
+    S.score+=gain;
+    fb.textContent="Benar! +"+gain+" poin";fb.className="fb ok";
+  }else{
+    S.streak=0;S.lives--;
+    if(btn){btn.classList.add("no");btn.classList.add("shake")}
+    fb.textContent=(btn?"Kurang tepat.":"Waktu habis.")+" Jawaban yang benar: "+q[1];fb.className="fb no";
+  }
+  hud();
+  const last=S.i+1>=S.list.length;
+  $("next").textContent=(S.lives<=0||last)?"Lihat hasil":"Lanjut";
+  $("next").classList.remove("hide");
+  $("next").focus();
+}
+
+function next(){
+  if(S.lives<=0||S.i+1>=S.list.length)return finish();
+  S.i++;show();
+}
+
+function finish(){
+  const prev=getBest(S.k);
+  const rec=S.score>prev;
+  if(rec)setBest(S.k,S.score);
+  const n=S.list.length,pct=S.right/n;
+  $("etitle").textContent=S.lives<=0?"Nyawa habis, tapi kamu sudah belajar!":pct>=0.75?"Hebat, kamu menguasai "+DATA[S.k].name+"!":"Selesai! Terus berlatih, ya.";
+  $("escore").textContent=S.score;
+  $("estats").innerHTML=["Benar "+S.right+" dari "+n,"Runtun terbaik "+S.maxStreak,rec?"Rekor baru!":"Rekor "+prev].map(t=>'<span class="pill">'+t+'</span>').join("");
+  view("end");$("again").focus();
+}
+
+$("next").onclick=next;
+$("again").onclick=()=>start(S.k);
+$("home").onclick=menu;
+menu();
+</script>
+</body>
+</html>
